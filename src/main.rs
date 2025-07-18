@@ -36,17 +36,17 @@ fn main() {
         
 
         match p_header.packet_id {
-            0 => println!("Motion Packet"),
-            1 => println!("Session Packet"),
+            0 => {}//println!("Motion Packet"),
+            1 => {} //println!("Session Packet"),
             2 => {
-                let lpd_data = &pkt_data[1166 - 53..]; // 1190 - 24 = 1166, packet is 53 bytes, driver index is last index aka last 53 bytes. 
-                let packet = pkt_structs::LapDataPacket::decode_lap_data_packet(lpd_data);
-                println!("\n{:?}", packet);
-                println!("\n{:?}", pkt_data);
+                // let lpd_data = &pkt_data[1166 - 53..]; // 1190 - 24 = 1166, packet is 53 bytes, driver index is last index aka last 53 bytes. 
+                // let packet = pkt_structs::LapDataPacket::decode_lap_data_packet(lpd_data);
+                // println!("\n{:?}", packet);
+                // println!("\n{:?}", pkt_data);
             },
-            3 => println!("Event Packet"),
-            4 => println!("Particpants Packet"),
-            5 => println!("Car Setups Packet"),
+            3 => {} //println!("Event Packet"),
+            4 => {} //println!("Particpants Packet"),
+            5 => {} //println!("Car Setups Packet"),
             6 => {
                 let ct_data = &pkt_data[1283 - 65..]; // 1307 - 24 = 1283. should be offset by 58 buuuut the last 7 bytes of the packet contain 
                                                               // some extra info so 58 + 7 = 65. the struct will ignore everthing after it is full.
@@ -54,10 +54,10 @@ fn main() {
                 println!("\n{:?}", packet);
                 // println!("\n{:?}", ct_data);
             },
-            7 => println!("Car Status Packet"),
-            8 => println!("Final Classification Packet"),
-            9 => println!("Lobby Information Packet"),
-            _ => println!("Packet ID not recognized")
+            7 => {} //println!("Car Status Packet"),
+            8 => {} //println!("Final Classification Packet"),
+            9 => {} //println!("Lobby Information Packet"),
+            _ => {} //println!("Packet ID not recognized")
         };        
         
         // println!("Packet data -> {:?}", pkt_data);
