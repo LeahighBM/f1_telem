@@ -4,16 +4,16 @@ use std::io::Cursor;
 #[derive(Debug)]
 #[repr(C)]
 pub struct Header {
-    pub packet_format:    u16,
-    pub maj_version:       u8,
-    pub min_version:       u8, 
-    pub packet_version:    u8,
+    packet_format:    u16,
+    maj_version:      u8,
+    min_version:      u8, 
+    packet_version:    u8,
     pub packet_id:         u8,
-    pub session_uid:       u64, 
-    pub session_time:      f32,
-    pub frame_id:          u32, 
-    pub player_car_idx:    u8, 
-    pub sec_player_car_id: u8,
+    session_uid:       u64, 
+    session_time:      f32,
+    frame_id:          u32, 
+    player_car_idx:    u8, 
+    sec_player_car_id: u8,
 }
 
 impl Header {
@@ -107,7 +107,7 @@ impl LapDataPacket {
 #[derive(Debug)]
 #[repr(C)]
 pub struct CarTelemetryPacket{
-    speed:             u16,
+    speed_kph:             u16,
     throttle:          f32,
     steer:             f32, 
     brake:             f32,
@@ -144,7 +144,7 @@ impl CarTelemetryPacket{
         let mut rdr = Cursor::new(packet_chunk);
 
         Self {
-            speed:              rdr.read_u16::<LittleEndian>().unwrap(), 
+            speed_kph:          rdr.read_u16::<LittleEndian>().unwrap(), 
             throttle:           rdr.read_f32::<LittleEndian>().unwrap(),
             steer:              rdr.read_f32::<LittleEndian>().unwrap(),
             brake:              rdr.read_f32::<LittleEndian>().unwrap(),
@@ -174,7 +174,6 @@ impl CarTelemetryPacket{
             tyre_2_surf_type:    rdr.read_u8().unwrap(), 
             tyre_3_surf_type:    rdr.read_u8().unwrap(), 
             tyre_4_surf_type:    rdr.read_u8().unwrap(), 
-
         }
     }
 }
