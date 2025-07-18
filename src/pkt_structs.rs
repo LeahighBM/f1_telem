@@ -4,11 +4,11 @@ use std::io::Cursor;
 #[derive(Debug)]
 #[repr(C)]
 pub struct Header {
-    packet_format:    u16,
-    maj_version:      u8,
-    min_version:      u8, 
+    packet_format:     u16,
+    maj_version:       u8,
+    min_version:       u8, 
     packet_version:    u8,
-    pub packet_id:         u8,
+    pub packet_id:     u8,
     session_uid:       u64, 
     session_time:      f32,
     frame_id:          u32, 
