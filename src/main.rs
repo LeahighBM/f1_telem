@@ -43,7 +43,8 @@ fn main() {
             // println!("\n{:?}", pkt_data);
         }
         else if p_header.packet_id == 6 {
-            let ct_data = &pkt_data[1283 - 65..]; // 1307 - 58 buuuut the last 7 bytes of the packet contain som extra info so 58 + 7 = 65. the struct will ignore everthing after it is full.
+            let ct_data = &pkt_data[1283 - 65..]; // 1307 - 24 = 1283. should be offset by 58 buuuut the last 7 bytes of the packet contain 
+                                                         // some extra info so 58 + 7 = 65. the struct will ignore everthing after it is full.
             let packet = pkt_structs::CarTelemetryPacket::decode_car_tlm_packet(ct_data);
             println!("\n{:?}", packet);
             // println!("\n{:?}", ct_data);
