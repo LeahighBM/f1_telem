@@ -53,7 +53,11 @@ def plot_dashboard(data, fields_to_plot, output_file='telemetry_dashboard.html')
     print(f"Dashboard saved to {output_file}")
 
 if __name__ == "__main__":
-    filename = "sample_car_data.txt"
-    fields = ['speed_kph', 'throttle', 'steer', 'brake', 'gear', 'eng_rpm', 'drs', 'engine_temp']
+    filename = "spa_race_tlm.txt"
+    fields = ['speed_kph', 'throttle', 'steer', 'brake', 'gear', 
+              'eng_rpm', 'drs', 'engine_temp', 'brake_1_temp', 
+              'brake_2_temp', 'brake_3_temp', 'brake_4_temp', 
+              'tyre_1_surface_temp', 'tyre_2_surface_temp', 
+              'tyre_3_surface_temp', 'tyre_4_surface_temp']
     telemetry_data = parse_telemetry_file(filename)
     plot_dashboard(telemetry_data, fields)
