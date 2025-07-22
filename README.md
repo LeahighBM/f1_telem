@@ -6,6 +6,9 @@ Receive F1 2020 UDP telemetry and plot to interactive dashboard
 
 After further review, it would appear that the appearance of a delay in the python data was due to a PEBKAC error and looking at the wrong portion of the packet. But, since I have gotten so much working with Rust, might as well stick with it. <sup><sub>Grumble grumble sunk cost fallacy grumble grumble<sub><sup>
 
+This project now puts its data into a Postgres TimeScaleDB which allows for the addition of Grafana for creating custom dashboards.
+![](misc/grafana.png)
+
 ## Running 
 To run the code make sure you have `cargo` installed. If you don't you can follow the [cargo installation instructions](https://doc.rust-lang.org/cargo/getting-started/installation.html) to get started. Once cargo is installed running `cargo run` should start the UDP listening. If you would like to send the packets to a file for later plotting with python you can run `cargo run | tee misc/name_of_file.txt`
 
