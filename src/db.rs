@@ -1,19 +1,7 @@
 use postgres::{Client, Error};
-
-use crate::pkt_structs::{CarTelemetryPacket, Header};
+use crate::{pkt_structs::{CarTelemetryPacket, Header, MotionDataPacket, LapDataPacket}};
 
 pub fn db_create_tables(client: &mut Client) -> Result<(), Error> {
-
-//     packet_format:     u16,
-//     maj_version:       u8,
-//     min_version:       u8, 
-//     packet_version:    u8,
-//     pub packet_id:     u8,
-//     session_uid:       u64, 
-//     session_time:      f32,
-//     frame_id:          u32, 
-//     player_car_idx:    u8, 
-//     sec_player_car_id: u8,
 
     client.batch_execute(
         "DROP TABLE  IF EXISTS tbl_header_pkts;
@@ -34,39 +22,6 @@ pub fn db_create_tables(client: &mut Client) -> Result<(), Error> {
     );
     SELECT create_hypertable('tbl_header_pkts', 'time', if_not_exists => TRUE);"
 )?;
-
-
-// pub time:          DateTime<Utc>,
-//     speed_kph:         u16,
-//     throttle:          f32,
-//     steer:             f32, 
-//     brake:             f32,
-//     clutch:            u8,
-//     gear:              i8,
-//     eng_rpm:           u16,
-//     drs:               u8,
-//     rev_light_percent: u8,
-//     brake_1_temp:      u16,
-//     brake_2_temp:      u16,
-//     brake_3_temp:      u16,
-//     brake_4_temp:      u16,
-//     tyre_1_surface_temp: u8,
-//     tyre_2_surface_temp: u8,
-//     tyre_3_surface_temp: u8,
-//     tyre_4_surface_temp: u8,
-//     tyre_1_inner_temp:   u8, 
-//     tyre_2_inner_temp:   u8, 
-//     tyre_3_inner_temp:   u8, 
-//     tyre_4_inner_temp:   u8,
-//     engine_temp:         u16,
-//     tyre_1_pressure:     f32, 
-//     tyre_2_pressure:     f32, 
-//     tyre_3_pressure:     f32, 
-//     tyre_4_pressure:     f32,
-//     tyre_1_surf_type:    u8, 
-//     tyre_2_surf_type:    u8, 
-//     tyre_3_surf_type:    u8, 
-//     tyre_4_surf_type:    u8, 
 
     client.batch_execute(
         "CREATE TABLE IF NOT EXISTS tbl_car_tlm (
@@ -94,10 +49,10 @@ pub fn db_create_tables(client: &mut Client) -> Result<(), Error> {
         tyre_3_inner_temp   SMALLINT    NOT NULL,
         tyre_4_inner_temp   SMALLINT    NOT NULL,
         engine_temp         SMALLINT    NOT NULL,
-        tyre_1_pressure     SMALLINT    NOT NULL,
-        tyre_2_pressure     SMALLINT    NOT NULL,
-        tyre_3_pressure     SMALLINT    NOT NULL,
-        tyre_4_pressure     SMALLINT    NOT NULL,
+        tyre_1_pressure     REAL        NOT NULL,
+        tyre_2_pressure     REAL        NOT NULL,
+        tyre_3_pressure     REAL        NOT NULL,
+        tyre_4_pressure     REAL        NOT NULL,
         tyre_1_surf_type    SMALLINT    NOT NULL,
         tyre_2_surf_type    SMALLINT    NOT NULL,
         tyre_3_surf_type    SMALLINT    NOT NULL,
@@ -107,7 +62,149 @@ pub fn db_create_tables(client: &mut Client) -> Result<(), Error> {
     )?;
 
 
+    client.batch_execute("CREATE TABLE IF NOT EXISTS tbl_lap_data (
+        id                  BIGSERIAL,
+        time                TIMESTAMPTZ NOT NULL,
+        last_lap_time       REAL        NOT NULL,
+        curr_lap_time       REAL        NOT NULL,
+        sector_1_time_ms    SMALLINT    NOT NULL,
+        sector_2_time_ms    SMALLINT    NOT NULL,
+        best_lap_time       REAL        NOT NULL,
+        best_lap_num        SMALLINT    NOT NULL,
+        best_lap_s1_ms      SMALLINT    NOT NULL,
+        best_lap_s2_ms      SMALLINT    NOT NULL,
+        best_lap_s3_ms      SMALLINT    NOT NULL,
+        best_ovr_s1_ms      SMALLINT    NOT NULL,
+        best_ovr_s1_lap     SMALLINT    NOT NULL,
+        best_ovr_s2_ms      SMALLINT    NOT NULL,
+        best_ovr_s2_lap     SMALLINT    NOT NULL,
+        best_ovr_s3_ms      SMALLINT    NOT NULL,
+        best_ovr_s3_lap     SMALLINT    NOT NULL,
+        lap_distance        REAL        NOT NULL,
+        total_distance      REAL        NOT NULL,
+        safety_car_delta    REAL        NOT NULL,
+        car_position        SMALLINT    NOT NULL,
+        curr_lap_num        SMALLINT    NOT NULL,
+        pit_status          SMALLINT    NOT NULL,
+        sector              SMALLINT    NOT NULL,
+        curr_lap_invalid    SMALLINT    NOT NULL,
+        penalties           SMALLINT    NOT NULL,
+        grid_postion        SMALLINT    NOT NULL,
+        driver_status       SMALLINT    NOT NULL,
+        result_status       SMALLINT    NOT NULL
+    );
+    
+    SELECT create_hypertable('tbl_car_tlm', 'time', if_not_exists => TRUE);"
+
+)?;
     Ok(())
+
+}
+
+pub fn header_insert(client: &mut Client, p_header: &Header)-> Result<(), Error> {
+       
+    client.execute(
+        "INSERT INTO tbl_header_pkts (
+        time,
+        packet_format,
+        maj_version,
+        min_version,
+        packet_version,
+        packet_id,
+        session_uid,
+        session_time,
+        frame_id,
+        player_car_idx,
+        sec_player_car_id
+        )
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);", 
+        &[
+                    &p_header.time,
+                    &p_header.packet_format,
+                    &(p_header.maj_version as i16),
+                    &(p_header.min_version as i16),
+                    &(p_header.packet_version as i16),
+                    &(p_header.packet_id as i16),
+                    &p_header.session_uid,
+                    &p_header.session_time,
+                    &p_header.frame_id,
+                    &(p_header.player_car_idx as i16),
+                    &(p_header.sec_player_car_id as i16)])?;
+
+        Ok(())
+}
+
+pub fn motion_data_insert(client: &mut Client, pkt: &MotionDataPacket) {
+
+}
+
+pub fn lap_data_insert(client: &mut Client, pkt: &LapDataPacket)-> Result<(), Error> {
+
+    client.execute(
+        "INSERT INTO tbl_lap_data (
+        time,
+        last_lap_time,
+        curr_lap_time,
+        sector_1_time_ms,
+        sector_2_time_ms,
+        best_lap_time,
+        best_lap_num,
+        best_lap_s1_ms,
+        best_lap_s2_ms,
+        best_lap_s3_ms,
+        best_ovr_s1_ms,
+        best_ovr_s1_lap,
+        best_ovr_s2_ms,
+        best_ovr_s2_lap,
+        best_ovr_s3_ms,
+        best_ovr_s3_lap,
+        lap_distance,
+        total_distance,
+        safety_car_delta,
+        car_position,
+        curr_lap_num,
+        pit_status,
+        sector,
+        curr_lap_invalid,
+        penalties,
+        grid_postion,
+        driver_status,
+        result_status)
+        VALUES (
+        $1,  $2,  $3,  $4,  $5,  $6,  $7,  $8,  $9,  $10,
+        $11, $12, $13, $14, $15, $16, $17, $18, $19, $20,
+        $21, $22, $23, $24, $25, $26, $27, $28);", 
+        &[
+            &pkt.time,
+            &pkt.last_lap_time,
+            &pkt.current_lap_time,
+            &pkt.sector1TimeInMS,
+            &pkt.sector2TimeInMS,
+            &pkt.bestLapTime,
+            &(pkt.bestLapNum as i16),
+            &pkt.bestLapSector1TimeInMS,
+            &pkt.bestLapSector2TimeInMS,
+            &pkt.bestLapSector3TimeInMS,
+            &pkt.bestOverallSector1TimeInMS,
+            &(pkt.bestOverallSector1LapNum as i16),
+            &pkt.bestOverallSector2TimeInMS,
+            &(pkt.bestOverallSector2LapNum as i16),
+            &pkt.bestOverallSector3TimeInMS,
+            &(pkt.bestOverallSector3LapNum as i16),
+            &pkt.lapDistance,
+            &pkt.totalDistance,
+            &pkt.safetyCarDelta,
+            &(pkt.carPosition as i16),
+            &(pkt.currentLapNum as i16),
+            &(pkt.pitStatus as i16),
+            &(pkt.sector as i16),
+            &(pkt.currentLapInvalid as i16),
+            &(pkt.penalties as i16),
+            &(pkt.gridPosition as i16),
+            &(pkt.driverStatus as i16),
+            &(pkt.resultStatus as i16)])?;
+
+        Ok(())
 }
 
 pub fn car_insert(client: &mut Client, pkt: &CarTelemetryPacket) -> Result<(), Error> {
@@ -146,36 +243,9 @@ pub fn car_insert(client: &mut Client, pkt: &CarTelemetryPacket) -> Result<(), E
         tyre_3_surf_type,   
         tyre_4_surf_type)
         VALUES (
-        $1, 
-        $2,
-        $3, 
-        $4, 
-        $5,
-        $6, 
-        $7,
-        $8, 
-        $9, 
-        $10, 
-        $11, 
-        $12,
-        $13, 
-        $14, 
-        $15,
-        $16, 
-        $17, 
-        $18,
-        $19, 
-        $20, 
-        $21,
-        $22, 
-        $23,
-        $24, 
-        $25,
-        $26, 
-        $27,
-        $28, 
-        $29,
-        $30,
+        $1,  $2,  $3,  $4,  $5,  $6,  $7,  $8,  $9,  $10, 
+        $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, 
+        $21, $22, $23, $24, $25, $26, $27, $28, $29, $30,
         $31);", &[
             &pkt.time,
             &pkt.speed_kph,
@@ -184,7 +254,7 @@ pub fn car_insert(client: &mut Client, pkt: &CarTelemetryPacket) -> Result<(), E
             &pkt.brake,              
             &(pkt.clutch as i16),             
             &(pkt.gear as i16),               
-            &pkt.eng_rpm,         
+            &pkt.engine_rpm,         
             &(pkt.drs as i16),                
             &(pkt.rev_light_percent as i16),  
             &pkt.brake_1_temp,       
@@ -200,10 +270,10 @@ pub fn car_insert(client: &mut Client, pkt: &CarTelemetryPacket) -> Result<(), E
             &(pkt.tyre_3_inner_temp as i16),  
             &(pkt.tyre_4_inner_temp as i16),  
             &pkt.engine_temp,       
-            &(pkt.tyre_1_pressure as i16),    
-            &(pkt.tyre_2_pressure as i16),    
-            &(pkt.tyre_3_pressure as i16),    
-            &(pkt.tyre_4_pressure as i16),    
+            &pkt.tyre_1_pressure,    
+            &pkt.tyre_2_pressure,    
+            &pkt.tyre_3_pressure,    
+            &pkt.tyre_4_pressure,    
             &(pkt.tyre_1_surf_type as i16),   
             &(pkt.tyre_2_surf_type as i16),   
             &(pkt.tyre_3_surf_type as i16),   
@@ -213,39 +283,3 @@ pub fn car_insert(client: &mut Client, pkt: &CarTelemetryPacket) -> Result<(), E
     Ok(())
 }
 
-pub fn header_insert(client: &mut Client, p_header: &Header)-> Result<(), Error> {
-        // println!("{:#?}", p_header);
-
-        client.execute(
-            "INSERT INTO tbl_header_pkts (
-            time,
-            packet_format,
-            maj_version,
-            min_version,
-            packet_version,
-            packet_id,
-            session_uid,
-            session_time,
-            frame_id,
-            player_car_idx,
-            sec_player_car_id
-            )
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);", 
-            &[
-                      &p_header.time,
-                      &p_header.packet_format,
-                      &(p_header.maj_version as i16),
-                      &(p_header.min_version as i16),
-                      &(p_header.packet_version as i16),
-                      &(p_header.packet_id as i16),
-                      &p_header.session_uid,
-                      &p_header.session_time,
-                      &p_header.frame_id,
-                      &(p_header.player_car_idx as i16),
-                      &(p_header.sec_player_car_id as i16)])?;
-
-        // println!("Received {} bytes from {} -> \n\t{:?}", bytes, src, p_header);
-        // println!("{:?}", packet[23]);
-
-        Ok(())
-}
