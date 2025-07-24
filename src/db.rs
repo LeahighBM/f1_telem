@@ -95,8 +95,35 @@ pub fn db_create_tables(client: &mut Client) -> Result<(), Error> {
     );
     
     SELECT create_hypertable('tbl_car_tlm', 'time', if_not_exists => TRUE);"
-
 )?;
+
+    client.batch_execute(
+        "CREATE TABLE IF NOT EXISTS tbl_motion_data(
+            id              BIGSERIAL,
+            time            TIMESTAMPTZ NOT NULL,
+            pos_x           REAL NOT NULL,
+            pos_y           REAL NOT NULL,
+            pos_z           REAL NOT NULL,
+            vel_x           REAL NOT NULL,
+            vel_y           REAL NOT NULL,
+            vel_z           REAL NOT NULL,
+            world_forward_x SMALLINT NOT NULL,
+            world_forward_y SMALLINT NOT NULL,
+            world_forward_z SMALLINT NOT NULL,
+            world_right_x   SMALLINT NOT NULL,
+            world_right_y   SMALLINT NOT NULL,
+            world_right_z   SMALLINT NOT NULL,
+            lat_g_force     REAL NOT NULL,
+            long_g_force    REAL NOT NULL,
+            vert_g_force    REAL NOT NULL,
+            yaw_rads        REAL NOT NULL,
+            pitch_rads      REAL NOT NULL,
+            roll_rads       REAL NOT NULL
+            );
+            
+            
+            SELECT create_hypertable('tbl_motion_data', 'time', if_not_exists => TRUE);"
+    )?; 
     Ok(())
 
 }
@@ -134,8 +161,55 @@ pub fn header_insert(client: &mut Client, p_header: &Header)-> Result<(), Error>
         Ok(())
 }
 
-pub fn motion_data_insert(client: &mut Client, pkt: &MotionDataPacket) {
+pub fn motion_data_insert(client: &mut Client, pkt: &MotionDataPacket) -> Result<(), Error> {
+    client.execute(
+        "INSERT INTO tbl_motion_data (           
+        time           ,
+        pos_x          ,
+        pos_y          ,
+        pos_z          ,
+        vel_x          ,
+        vel_y          ,
+        vel_z          ,
+        world_forward_x,
+        world_forward_y,
+        world_forward_z,
+        world_right_x  ,
+        world_right_y  ,
+        world_right_z  ,
+        lat_g_force    ,
+        long_g_force   ,
+        vert_g_force   ,
+        yaw_rads       ,
+        pitch_rads     ,
+        roll_rads)
+        VALUES (
+        $1,  $2,  $3,  $4,  $5,  $6,  $7,  $8,  $9,  $10,
+        $11, $12, $13, $14, $15, $16, $17, $18, $19)", 
+        &[
+            &pkt.time,
+            &pkt.pos_x,
+            &pkt.pos_y,
+            &pkt.pos_z,
+            &pkt.vel_x,
+            &pkt.vel_y,
+            &pkt.vel_z,
+            &pkt.world_forward_x,
+            &pkt.world_forward_y,
+            &pkt.world_forward_z,
+            &pkt.world_right_x,
+            &pkt.world_right_y,
+            &pkt.world_right_z,
+            &pkt.lat_g_force,
+            &pkt.long_g_force,
+            &pkt.vert_g_force,
+            &pkt.yaw_rads,
+            &pkt.pitch_rads, 
+            &pkt.roll_rads,
 
+        ])?;
+
+        Ok(())
 }
 
 pub fn lap_data_insert(client: &mut Client, pkt: &LapDataPacket)-> Result<(), Error> {
