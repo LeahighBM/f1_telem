@@ -4,7 +4,7 @@ mod pkt_structs;
 mod db;
 use postgres::{Client, NoTls, Error};
 
-use crate::db::{car_insert, db_create_tables, header_insert, lap_data_insert};
+use crate::db::{car_insert, db_create_tables, header_insert, lap_data_insert, motion_data_insert};
 
 #[derive(Debug)]
 #[repr(C)]
@@ -36,7 +36,7 @@ fn main() -> Result<(), Error>{
             0 => { // "Motion Packet"
                 let mp_data = &pkt_data[1440 - 180..]; // 1464-24 = 1440. pkt is 60 bytes plus 120 additional bytes at the end for 180
                 let packet = pkt_structs::MotionDataPacket::decode_motion_data_pkt(mp_data);
-                // motion_data_insert(&mut client, &packet); 
+                motion_data_insert(&mut client, &packet)?; 
                 println!("{:#?}", packet)
             }
             1 => { // "Session Packet"
