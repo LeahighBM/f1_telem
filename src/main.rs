@@ -37,7 +37,6 @@ fn main() -> Result<(), Error>{
                 let mp_data = &pkt_data[1440 - 180..]; // 1464-24 = 1440. pkt is 60 bytes plus 120 additional bytes at the end for 180
                 let packet = pkt_structs::MotionDataPacket::decode_motion_data_pkt(mp_data);
                 motion_data_insert(&mut client, &packet)?; 
-                println!("{:#?}", packet)
             }
             1 => { // "Session Packet"
 
