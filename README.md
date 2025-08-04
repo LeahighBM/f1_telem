@@ -32,4 +32,4 @@ Cargo, the Rust package and dependency manager.
 To run the code make sure you have `cargo` installed. If you don't you can follow the [cargo installation instructions](https://doc.rust-lang.org/cargo/getting-started/installation.html) to get started. Once cargo is installed running `cargo run` should start the UDP listening. 
 
 ### Python
-While originally supported, the python dashboards are considered deprecated and no longer supported.
+Python is currently only partially supported in the form of a barebones Django REST Framework (DRF) API to read from the F1 database. It is not fully operational.
