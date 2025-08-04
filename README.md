@@ -25,8 +25,10 @@ This project now puts its data into a Postgres TimeScaleDB which allows for the 
 ## Running 
 
 ### Prerequisites
-PostgreSQL 15 or greater with the TimeScaleDB extension. 
+PostgreSQL 15 or greater with the TimeScaleDB extension.
+
 Grafana. I self hosted on my local machine but Grafana does support Docker and cloud based implementations as well. See the resources below for more.
+
 Cargo, the Rust package and dependency manager.
 
 To run the code make sure you have `cargo` installed. If you don't you can follow the [cargo installation instructions](https://doc.rust-lang.org/cargo/getting-started/installation.html) to get started. Once cargo is installed running `cargo run` should start the UDP listening. 
